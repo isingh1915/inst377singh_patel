@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>about</title>
+<link rel="stylesheet" href="style.css" />
+<style>
+  body, html {
+    margin: 0;
+    font-family: "Times New Roman", serif;
+    background-color: #f9f1f7;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  nav {
+    background: #c777b9;
+    padding: 1rem;
+    text-align: center;
+  }
+  nav a {
+    text-transform: lowercase;
+    margin: 0 15px;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  nav a:hover {
+    text-decoration: underline;
+  }
+  main {
+    flex-grow: 1;
+    max-width: 700px;
+    margin: 2rem auto;
+    padding: 1rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+  }
+  h1 {
+    text-transform: lowercase;
+    margin-bottom: 1rem;
+  }
+  p {
+    font-size: 1.1rem;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">home</a>
+    <a href="about.html">about</a>
+    <a href="jobs.html">job listings</a>
+    <a href="dashboard.html">dashboard</a>
+  </nav>
+  <main>
+    <h1>about this project</h1>
+    <p>
+      This platform aggregates internship and job listings from multiple trusted APIs including Adzuna and USAJobs.
+      Users can search, filter, and save jobs with application tracking features.
+    </p>
+    <p>
+      Target users include college students and early-career professionals seeking centralized job opportunities across government and private sectors.
+    </p>
+  </main>
+</body>
+</html>

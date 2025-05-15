@@ -1,0 +1,117 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Times New Roman', serif;
+  background-color: #ffffff;
+  color: #000000;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 2rem;
+}
+
+nav {
+  width: 100%;
+  max-width: 960px;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+nav a {
+  color: #000000;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.1rem;
+  text-transform: lowercase;
+  transition: color 0.3s ease;
+}
+
+nav a:hover {
+  color: #555555;
+}
+
+button {
+  background: linear-gradient(45deg, #222222, #000000);
+  color: #ffffff;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 6px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+  text-transform: lowercase;
+}
+
+button:hover {
+  background: linear-gradient(45deg, #000000, #444444);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+}
+
+h1, h2, h3 {
+  font-weight: 700;
+  text-transform: lowercase;
+  margin-bottom: 1rem;
+  color: #000000;
+  text-align: center;
+}
+
+.voice-instructions {
+  margin-top: 3rem;
+  font-style: italic;
+  font-size: 0.9rem;
+  color: #333333;
+  text-align: center;
+  max-width: 960px;
+}
+
+.container {
+  max-width: 960px;
+  width: 100%;
+  text-align: center;
+}
+
+.job-listings, .about-section {
+  margin-bottom: 4rem;
+}
+
+a {
+  color: #000000;
+  text-decoration: underline;
+  transition: color 0.3s ease;
+  text-transform: lowercase;
+}
+
+a:hover {
+  color: #555555;
+}
+
+footer {
+  margin-top: auto;
+  padding: 1rem 0;
+  font-size: 0.8rem;
+  color: #666666;
+  text-align: center;
+  width: 100%;
+  max-width: 960px;
+}
+
+@media (max-width: 600px) {
+  nav {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  button {
+    width: 100%;
+  }
+}

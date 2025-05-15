@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>dashboard</title>
+<link rel="stylesheet" href="style.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  body, html {
+    font-family: "Times New Roman", serif;
+    background-color: #f9f1f7;
+    margin: 0; padding: 0;
+  }
+  nav {
+    background: #c777b9;
+    padding: 1rem;
+    text-align: center;
+  }
+  nav a {
+    text-transform: lowercase;
+    margin: 0 15px;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  nav a:hover {
+    text-decoration: underline;
+  }
+  main {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 1rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+  }
+  h1 {
+    text-transform: lowercase;
+  }
+  #saved-jobs {
+    margin-top: 1rem;
+  }
+  .job-card {
+    border: 1px solid #ccc;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  }
+  button {
+    background: #c777b9;
+    color: white;
+    border: none;
+    padding: 0.4rem 1rem;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    text-transform: lowercase;
+  }
+</style>
+</head>
+<body>
+  <nav>
+    <a href="index.html">home</a>
+    <a href="about.html">about</a>
+    <a href="jobs.html">job listings</a>
+    <a href="dashboard.html">dashboard</a>
+  </nav>
+  <main>
+    <h1>saved jobs dashboard</h1>
+    <canvas id="jobChart" width="400" height="150"></canvas>
+    <section id="saved-jobs">
+      <h2>your saved jobs</h2>
+      <div id="jobs-container"></div>
+    </section>
+  </main>
+
+<script>
+  async function fetchSavedJobs() {
+    try {
+      const res = await fetch('/api/saved-jobs');
+      return await res.json();
+    } catch (e) {
+      console.error('Error fetching saved jobs:', e);
+      return [];
+    }
+  }
+
+  function displaySavedJobs(jobs) {
+    const container = document.getElementById('jobs-container');
+    container.innerHTML = '';
+    if (jobs.length === 0) {
+      container.textContent = 'no saved jobs found.';
+      return;
+    }
+    jobs.forEach(job => {
+      const div = document.createElement('div');
+      div.className = 'job-card';
+      div.innerHTML = `
+        <strong>${job.title.toLowerCase()}</strong><br>
+        ${job.company.toLowerCase()} — ${job.location.toLowerCase()}<br>
+        <button data-id="${job.id}" class="delete-btn">remove</button>
+      `;
+      container.appendChild(div);
+    });
+
+    document.querySelectorAll('.delete-btn').forEach(button => {
+      button.onclick = async () => {
+        const id = button.dataset.id;
+        try {
+          await fetch('/api/saved-jobs/' + id, { method: 'DELETE' });
+          loadJobs();
+        } catch(e) {
+          alert('Failed to remove job');
+        }
+      };
+    });
+  }
+
+  async function loadJobs() {
+    const jobs = await fetchSavedJobs();
+    displaySavedJobs(jobs);
+    updateChart(jobs);
+  }
+
+  function updateChart(jobs) {
+    const ctx = document.getElementById('jobChart').getContext('2d');
+    const locationCount = {};
+    jobs.forEach(job => {
+      const loc = job.location.toLowerCase();
+      locationCount[loc] = (locationCount[loc] || 0) + 1;
+    });
+    const labels = Object.keys(locationCount);
+    const data = Object.values(locationCount);
+
+    if(window.jobChartInstance) window.jobChartInstance.destroy();
+
+    window.jobChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Jobs by Location',
+          data: data,
+          backgroundColor: '#c777b9'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+
+  loadJobs();
+</script>
+</body>
+</html>

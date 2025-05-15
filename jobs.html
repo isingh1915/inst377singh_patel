@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>job listings</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: "Times New Roman", serif;
+      background-color: #f9f1f7;
+      padding: 2rem;
+      text-align: center;
+    }
+    h2 {
+      text-transform: lowercase;
+    }
+    #job-list > div {
+      border: 1px solid #ccc;
+      margin: 1rem auto;
+      padding: 1rem;
+      max-width: 600px;
+      border-radius: 8px;
+      background: white;
+      text-align: left;
+    }
+    a {
+      color: #c777b9;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    button.save-btn {
+      background: #c777b9;
+      color: white;
+      border: none;
+      padding: 0.3rem 0.7rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      text-transform: lowercase;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h2>job listings</h2>
+
+  <input id="searchInput" type="text" placeholder="Search jobs or internships" style="width: 300px; padding: 8px;" />
+  <button id="searchBtn" style="padding: 8px 12px; margin-left: 8px;">search</button>
+
+  <div id="job-list"></div>
+
+  <script>
+    // === Your API Credentials ===
+    const adzunaAppId = 'afa2a2b0';
+    const adzunaAppKey = 'dc16d92602f8e02ac330bd1d2e8ca719';
+    const usaJobsApiKey = 'gF2aky2vQM+6KMCOI0j6UOau4bVkZxM8xLpfYiI4NaA=';
+    const userAgentEmail = 'isingh1915@gmail.com';
+
+    // === Fetch Adzuna Jobs ===
+    async function fetchAdzunaJobs(searchTerm) {
+      const url = `https://api.adzuna.com/v1/api/jobs/us/search/1?app_id=${adzunaAppId}&app_key=${adzunaAppKey}&results_per_page=5&what=${encodeURIComponent(searchTerm)}`;
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        return data.results || [];
+      } catch (error) {
+        console.error('Error fetching Adzuna jobs:', error);
+        return [];
+      }
+    }
+
+    // === Fetch USAJobs ===
+    async function fetchUSAJobs(searchTerm) {
+      const url = `https://data.usajobs.gov/api/search?Keyword=${encodeURIComponent(searchTerm)}&ResultsPerPage=5`;
+      try {
+        const response = await fetch(url, {
+          headers: {
+            'Authorization-Key': usaJobsApiKey,
+            'User-Agent': userAgentEmail
+          }
+        });
+        const data = await response.json();
+        return data.SearchResult.SearchResultItems || [];
+      } catch (error) {
+        console.error('Error fetching USAJobs:', error);
+        return [];
+      }
+    }
+
+    // === Fetch Open Skills ===
+    async function fetchOpenSkills(searchTerm) {
+      const url = `https://api.open-skills.org/v1/skills?text=${encodeURIComponent(searchTerm)}&limit=5`;
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        return data.data || [];
+      } catch (error) {
+        console.error('Error fetching Open Skills:', error);
+        return [];
+      }
+    }
+
+    // === Fetch Reed.co.uk Jobs ===
+    async function fetchReedJobs(searchTerm) {
+      const url = `https://www.reed.co.uk/api/1.0/search?keywords=${encodeURIComponent(searchTerm)}&resultsToTake=5`;
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+        return data.results || [];
+      } catch (error) {
+        console.error('Error fetching Reed jobs:', error);
+        return [];
+      }
+    }
+
+    // === Save job to backend ===
+    async function saveJob(job) {
+      try {
+        const response = await fetch('/api/saved-jobs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ job }),
+        });
+        if (!response.ok) throw new Error('Failed to save job');
+        alert('job saved!');
+      } catch (e) {
+        alert('error saving job: ' + e.message);
+      }
+    }
+
+    // === Display Adzuna Jobs ===
+    function displayAdzunaJobs(jobs) {
+      const container = document.getElementById('job-list');
+      if (jobs.length === 0) {
+        container.insertAdjacentHTML('beforeend', '<p>no adzuna jobs found.</p>');
+        return;
+      }
+      container.insertAdjacentHTML('beforeend', '<h3 style="text-transform: lowercase;">adzuna jobs</h3>');
+      jobs.forEach(job => {
+        const html = `
+          <div>
+            <strong>${job.title.toLowerCase()}</strong><br>
+            ${job.company.display_name.toLowerCase()} — ${job.location.display_name.toLowerCase()}<br>
+            Salary: ${job.salary_min ? '$' + job.salary_min : 'N/A'} - ${job.salary_max ? '$' + job.salary_max : 'N/A'}<br>
+            <a href="${job.redirect_url}" target="_blank">view job</a><br>
+            <button class="save-btn">save job</button>
+          </div>
+        `;
+        const div = document.createElement('div');
+        div.innerHTML = html;
+        div.querySelector('button.save-btn').onclick = () =>
+          saveJob({
+            title: job.title,
+            company: job.company.display_name,
+            location: job.location.display_name,
+            url: job.redirect_url,
+          });
+        container.appendChild(div);
+      });
+    }
+
+    // === Display USAJobs ===
+    function displayUSAJobs(jobs) {
+      const container = document.getElementById('job-list');
+      if (jobs.length === 0) {
+        container.insertAdjacentHTML('beforeend', '<p>no usajobs found.</p>');
+        return;
+      }
+      container.insertAdjacentHTML('beforeend', '<h3 style="text-transform: lowercase;">usajobs</h3>');
+      jobs.forEach(item => {
+        const job = item.MatchedObjectDescriptor;
+        const html = `
+          <div>
+            <strong>${job.PositionTitle.toLowerCase()}</strong><br>
+            ${job.OrganizationName.toLowerCase()} — ${job.PositionLocationDisplay.toLowerCase()}<br>
+            <a href="${job.ApplyURI[0]}" target="_blank">view job</a><br>
+            <button class="save-btn">save job</button>
+          </div>
+        `;
+        const div = document.createElement('div');
+        div.innerHTML = html;
+        div.querySelector('button.save-btn').onclick = () =>
+          saveJob({
+            title: job.PositionTitle,
+            company: job.OrganizationName,
+            location: job.PositionLocationDisplay,
+            url: job.ApplyURI[0],
+          });
+        container.appendChild(div);
+      });
+    }
+
+    // === Display Open Skills ===
+    function displayOpenSkills(skills) {
+      const container = document.getElementById('job-list');
+      if (skills.length === 0) {
+        container.insertAdjacentHTML('beforeend', '<p>no related skills found.</p>');
+        return;
+      }
+      container.insertAdjacentHTML('beforeend', '<h3 style="text-transform: lowercase;">related skills</h3>');
+      skills.forEach(skill => {
+        const html = `
+          <div>
+            <strong>${skill.name.toLowerCase()}</strong><br>
+            <em>${skill.definition || 'no description available.'}</em>
+          </div>
+        `;
+        container.insertAdjacentHTML('beforeend', html);
+      });
+    }
+
+    // === Display Reed.co.uk Jobs ===
+    function displayReedJobs(jobs) {
+      const container = document.getElementById('job-list');
+      if (jobs.length === 0) {
+        container.insertAdjacentHTML('beforeend', '<p>no reed.co.uk jobs found.</p>');
+        return;
+      }
+      container.insertAdjacentHTML('beforeend', '<h3 style="text-transform: lowercase;">reed.co.uk jobs</h3>');
+      jobs.forEach(job => {
+        const html = `
+          <div>
+            <strong>${job.jobTitle.toLowerCase()}</strong><br>
+            ${job.company.name.toLowerCase()} — ${job.locationName.toLowerCase()}<br>
+            <a href="${job.jobUrl}" target="_blank">view job</a><br>
+            <button class="save-btn">save job</button>
+          </div>
+        `;
+        const div = document.createElement('div');
+        div.innerHTML = html;
+        div.querySelector('button.save-btn').onclick = () =>
+          saveJob({
+            title: job.jobTitle,
+            company: job.company.name,
+            location: job.locationName,
+            url: job.jobUrl,
+          });
+        container.appendChild(div);
+      });
+    }
+
+    // === Main Search Function ===
+    document.getElementById('searchBtn').addEventListener('click', async () => {
+      const searchTerm = document.getElementById('searchInput').value.trim();
+      if (!searchTerm) return alert('please enter a search term.');
+
+      const container = document.getElementById('job-list');
+      container.innerHTML = ''; // Clear previous results
+
+      const [adzunaJobs, usaJobs, openSkills, reedJobs] = await Promise.all([
+        fetchAdzunaJobs(searchTerm),
+        fetchUSAJobs(searchTerm),
+        fetchOpenSkills(searchTerm),
+        fetchReedJobs(searchTerm)
+      ]);
+
+      displayAdzunaJobs(adzunaJobs);
+      displayUSAJobs(usaJobs);
+      displayOpenSkills(openSkills);
+      displayReedJobs(reedJobs);
+    });
+
+    // Optional: load default search on page load including Reed
+    fetchAdzunaJobs('internship').then(displayAdzunaJobs);
+    fetchUSAJobs('internship').then(displayUSAJobs);
+    fetchOpenSkills('internship').then(displayOpenSkills);
+    fetchReedJobs('internship').then(displayReedJobs);
+  </script>
+</body>
+</html>
